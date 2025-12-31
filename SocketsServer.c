@@ -77,6 +77,11 @@
                     error("ERROR reading from socket");
                 }
 
+                if (!strcmp(buffer, "quit")) {
+                    printf("Other user quit. Exiting now...");
+                    exit(0); 
+                }
+
                 printf("<%s> %s\n", clientUsername, buffer);
 
                 printf("<%s> ", username); 
@@ -89,6 +94,11 @@
                 n = write(newsockfd,buffer,strlen(buffer)); 
                 if (n < 0) {
                     error("ERROR writing to socket");
+                }
+
+                if (!strcmp(buffer, "quit")) {
+                    printf("Exiting Now...");
+                    exit(0); 
                 }
             }
         }

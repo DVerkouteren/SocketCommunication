@@ -17,7 +17,8 @@
 #include <netdb.h>
 
 void error(char *msg) { 
-    perror(msg); exit(0); 
+    perror(msg); 
+    exit(0); 
 } 
 
 int main(int argc, char *argv[]) {
@@ -75,7 +76,7 @@ int main(int argc, char *argv[]) {
         while(1) { 
             printf("<%s> ", username); 
             fflush(stdout); 
-            
+
             bzero(buffer,256); 
             fgets(buffer,255,stdin); 
             buffer[strcspn(buffer, "\n")] = 0;
@@ -85,11 +86,22 @@ int main(int argc, char *argv[]) {
                 error("ERROR writing to socket");
             }
 
+            if (!strcmp(buffer, "quit")) {
+                printf("Exiting Now...");
+                exit(0); 
+            }
+
             bzero(buffer,256); 
             n = read(sockfd,buffer,255); 
             if (n < 0) {
                 error("ERROR reading from socket");
             } 
+
+            if (!strcmp(buffer, "quit")) {
+                printf("Other user quit. Exiting now...");
+                exit(0); 
+            }
+
             printf("<%s> %s\n", otherUser, buffer); 
         } 
     } 
