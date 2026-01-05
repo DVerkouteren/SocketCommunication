@@ -1,7 +1,7 @@
 /* 
     SocketsClient.c
     ECE312-01 Project 1
-    AUTHORS: Dane Verkouteren & Addie Patterson
+    AUTHORS: Addie patterson & Dane Verkouteren
     DESCRIPTION: 
 */
 
@@ -9,12 +9,13 @@
 #include <stdlib.h> 
 #include <string.h> 
 #include <strings.h> 
-#include <unistd.h> 
+#include <unistd.h>
 #include <sys/types.h> 
 #include <sys/socket.h> 
 #include <netinet/in.h> 
 #include <arpa/inet.h> 
 #include <netdb.h>
+#include <signal.h>
 
 void error(char *msg) { 
     perror(msg); 
@@ -28,6 +29,7 @@ int main(int argc, char *argv[]) {
     char buffer[256]; 
     char username[32]; 
     char otherUser[32]; 
+    char server_ip[INET_ADDRSTRLEN];
 
     if (argc < 3) {
         fprintf(stderr,"usage %s hostname port\n", argv[0]); 
@@ -50,7 +52,9 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_family = AF_INET; 
     bcopy((char *)server->h_addr, (char *)&serv_addr.sin_addr.s_addr, server->h_length);
     serv_addr.sin_port = htons(portno); 
-    printf("Waiting for connection . . .\n"); 
+    
+    inet_ntop(AF_INET, server->h_addr_list[0], server_ip, sizeof(server_ip));
+    printf("Connecting to %s on port %d\n",server_ip, portno);
 
     if (connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0) {
         error("ERROR connecting");
@@ -73,37 +77,49 @@ int main(int argc, char *argv[]) {
             error("ERROR reading server's username from socket");
         } 
             
-        while(1) { 
-            printf("<%s> ", username); 
-            fflush(stdout); 
+        pid_t pid = fork();
+            if (pid != 0) { 
 
-            bzero(buffer,256); 
-            fgets(buffer,255,stdin); 
-            buffer[strcspn(buffer, "\n")] = 0;
+                while (1) {
+                    bzero(buffer, 256);
+                    int n = read(sockfd, buffer, 255);
 
-            n = write(sockfd,buffer,strlen(buffer)); 
-            if (n < 0) {
-                error("ERROR writing to socket");
+                    if (n <= 0) {
+                        printf("\nConnection closed.\n");
+                        exit(0);
+                    }
+
+                    if (!strcmp(buffer, "quit")) {
+                        close(sockfd);
+                        printf("\nOther user quit.\n");
+                        exit(1);
+                    }
+
+                    printf("\n<%s> %s\n", otherUser, buffer);
+                    printf("<%s> ", username);
+                    fflush(stdout);
+                }
+            } else { 
+                    
+                while (1) {
+                    printf("<%s> ", username);
+                    fflush(stdout);
+
+                    bzero(buffer, 256);
+                    fgets(buffer, 255, stdin);
+                    buffer[strcspn(buffer, "\n")] = 0;
+
+                    write(sockfd, buffer, strlen(buffer));
+
+                    if (!strcmp(buffer, "quit")) {
+                        kill(getppid(), SIGTERM);
+                        close(sockfd);
+                        printf("Exiting...\n");
+                        exit(1);
+                    }
+                }
             }
-
-            if (!strcmp(buffer, "quit")) {
-                printf("Exiting Now...");
-                exit(0); 
-            }
-
-            bzero(buffer,256); 
-            n = read(sockfd,buffer,255); 
-            if (n < 0) {
-                error("ERROR reading from socket");
-            } 
-
-            if (!strcmp(buffer, "quit")) {
-                printf("Other user quit. Exiting now...");
-                exit(0); 
-            }
-
-            printf("<%s> %s\n", otherUser, buffer); 
-        } 
     } 
+    
     return 0; 
 }
