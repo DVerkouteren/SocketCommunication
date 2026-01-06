@@ -85,11 +85,14 @@ int main(int argc, char *argv[]) {
                     int n = read(sockfd, buffer, 255);
 
                     if (n <= 0) {
+                        kill(getppid(), SIGTERM);
+                        close(sockfd);
                         printf("\nConnection closed.\n");
                         exit(0);
                     }
 
                     if (!strcmp(buffer, "quit")) {
+                        kill(getppid(), SIGTERM);
                         close(sockfd);
                         printf("\nOther user quit.\n");
                         exit(1);

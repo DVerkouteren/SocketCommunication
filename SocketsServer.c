@@ -118,6 +118,7 @@ int main(int argc, char *argv[]) {
                 write(newsockfd, buffer, strlen(buffer));
 
                 if (!strcmp(buffer, "quit")) {
+                    kill(getppid(), SIGTERM);
                     close(newsockfd);
                     printf("Exiting...\n");
                     exit(1);
