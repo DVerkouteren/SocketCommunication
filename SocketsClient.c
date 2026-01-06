@@ -2,7 +2,11 @@
     SocketsClient.c
     ECE312-01 Project 1
     AUTHORS: Addie patterson & Dane Verkouteren
-    DESCRIPTION: 
+    DESCRIPTION: This program implements a chat client that connects to a remote server using sockets. The 
+    client connects to the server using the IP address and port number given in the command line arguments.
+    The program prompts the client for a username, sends it to the server, and receives the server's 
+    username. Once connected, the program implements forking to send/recieve multiple messages in a row 
+    to/from the server. When the client or server enters "quit", the program is terminated on either end.
 */
 
 #include <stdio.h> 

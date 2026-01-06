@@ -3,7 +3,11 @@
     SocketsServer.c
     ECE312-01 Project 1
     AUTHORS: Addie Patterson & Dane Verkouteren
-    DESCRIPTION: 
+    DESCRIPTION: This program implements a server that connects to a remote client using sockets. The 
+    client connects to the server using the IP address and port number given in the command line arguments.
+    The program prompts the server for a username, sends it to the client, and receives the client's 
+    username. Once connected, the program implements forking to send/recieve multiple messages in a row 
+    to/from the client. When the server or client enters "quit", the program is terminated on either end.
   */
   
 #include <stdio.h> 
